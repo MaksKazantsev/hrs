@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/alserov/hrs/communication;comm";
+
+service Communication {
+  rpc CreateMessage(Message) returns (google.protobuf.Empty);
+  rpc DeleteMessage(MessageID) returns(google.protobuf.Empty);
+  rpc EditMessage(MessageEdit) returns (google.protobuf.Empty);
+}
+
+message MessageEdit {
+ string Value = 1;
+}
+
+message MessageID {
+  string ID = 1;
+}
+
+message Message {
+  string Value = 1;
+  repeated string Files = 2;
+  string SenderID = 3;
+}
