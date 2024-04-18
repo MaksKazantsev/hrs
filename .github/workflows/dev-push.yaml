@@ -1,0 +1,21 @@
+name: Push dev-comm
+on:
+  push:
+    branches:
+      - dev-comm
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22.0
+
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: testing
+        working-directory: communication
+        run: go test -v ./...
