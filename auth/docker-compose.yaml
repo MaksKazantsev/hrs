@@ -1,0 +1,20 @@
+version: 1.0.0
+name: auth_service
+
+
+services:
+  postgres:
+    image: postgres
+    container_name: users_db
+    ports:
+      - 5000:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_NAME=postgres
+      - POSTGRES_DB=auth
+    volumes:
+    - data:/etc/data/postgres/auth
+
+
+volumes:
+  data:

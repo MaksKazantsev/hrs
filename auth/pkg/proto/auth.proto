@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/alserov/hrs/auth/proto/gen";
+
+service User {
+  rpc Register(RegisterReq) returns(RegisterRes);
+  rpc Login(LoginReq) returns(LoginRes);
+}
+
+message RegisterReq {
+  string Username = 1;
+  string Password = 2;
+  string Email = 3;
+}
+
+message RegisterRes {
+  string UUID = 1;
+  string Token = 2;
+}
+
+message LoginReq {
+  string Email = 1;
+  string Password = 2;
+}
+
+message LoginRes {
+  string Token = 1;
+}

@@ -1,0 +1,8 @@
+port: 3003
+env: local
+db:
+  port: 5000
+  host: localhost
+  user: postgres
+  password: postgres
+  name: auth
