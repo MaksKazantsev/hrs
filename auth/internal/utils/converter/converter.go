@@ -18,6 +18,7 @@ type ToPb interface {
 type ToService interface {
 	RegReqToService(req *gen.RegisterReq) models.RegReq
 	LoginReqToService(req *gen.LoginReq) models.LoginReq
+	ResetReqToService(req *gen.ResetReq) models.ResetReq
 }
 
 func NewConverter() Converter {
@@ -25,6 +26,14 @@ func NewConverter() Converter {
 }
 
 type converter struct {
+}
+
+func (c *converter) ResetReqToService(req *gen.ResetReq) models.ResetReq {
+	return models.ResetReq{
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
+		Token:       req.Token,
+	}
 }
 
 func (c *converter) LoginResToPb(token string) *gen.LoginRes {

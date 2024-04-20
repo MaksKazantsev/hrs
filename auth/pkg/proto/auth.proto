@@ -7,6 +7,7 @@ option go_package = "github.com/alserov/hrs/auth/proto/gen";
 service User {
   rpc Register(RegisterReq) returns(RegisterRes);
   rpc Login(LoginReq) returns(LoginRes);
+  rpc Reset(ResetReq) returns(google.protobuf.Empty);
 }
 
 message RegisterReq {
@@ -28,3 +29,10 @@ message LoginReq {
 message LoginRes {
   string Token = 1;
 }
+
+message ResetReq {
+  string OldPassword = 1;
+  string NewPassword =2;
+  string Token = 3;
+}
+

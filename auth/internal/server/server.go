@@ -9,6 +9,7 @@ import (
 	"github.com/alserov/hrs/auth/internal/utils/validator"
 	"github.com/alserov/hrs/auth/pkg/proto/gen"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type server struct {
@@ -60,4 +61,15 @@ func (s *server) Login(ctx context.Context, req *gen.LoginReq) (*gen.LoginRes, e
 	}
 
 	return s.converter.LoginResToPb(token), nil
+}
+
+func (s *server) Reset(ctx context.Context, req *gen.ResetReq) (*emptypb.Empty, error) {
+	if err := s.validator.ValidateResReq(req); err != nil {
+		return nil, err
+	}
+	if err := s.service.ResetPass(ctx, s.converter.ResetReqToService(req)); err != nil {
+		return nil, utils.HandleError(err)
+	}
+
+	return nil, nil
 }

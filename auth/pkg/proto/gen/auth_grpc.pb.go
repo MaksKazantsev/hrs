@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type UserClient interface {
 	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterRes, error)
 	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error)
+	Reset(ctx context.Context, in *ResetReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type userClient struct {
@@ -52,12 +54,22 @@ func (c *userClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *userClient) Reset(ctx context.Context, in *ResetReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/User/Reset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
 	Register(context.Context, *RegisterReq) (*RegisterRes, error)
 	Login(context.Context, *LoginReq) (*LoginRes, error)
+	Reset(context.Context, *ResetReq) (*emptypb.Empty, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -70,6 +82,9 @@ func (UnimplementedUserServer) Register(context.Context, *RegisterReq) (*Registe
 }
 func (UnimplementedUserServer) Login(context.Context, *LoginReq) (*LoginRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedUserServer) Reset(context.Context, *ResetReq) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -120,6 +135,24 @@ func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/User/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).Reset(ctx, req.(*ResetReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +167,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _User_Login_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _User_Reset_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

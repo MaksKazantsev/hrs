@@ -35,3 +35,13 @@ func (p *Postgres) SignIn(ctx context.Context, email string) (db.LoginInfo, erro
 
 	return info, nil
 }
+
+func (p *Postgres) ResetPass(ctx context.Context, uuid string, password string) error {
+	q := `UPDATE users SET password = $1 WHERE uuid = $2`
+
+	_, err := p.Queryx(q, password, uuid)
+	if err != nil {
+		return utils.NewError(utils.ErrInternal, err.Error())
+	}
+	return nil
+}
