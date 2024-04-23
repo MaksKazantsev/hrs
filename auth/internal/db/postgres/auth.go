@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/alserov/hrs/auth/internal/db"
+	"github.com/alserov/hrs/auth/internal/log"
 	"github.com/alserov/hrs/auth/internal/models"
 	"github.com/alserov/hrs/auth/internal/utils"
 )
@@ -16,6 +17,9 @@ func (p *Postgres) SignUp(ctx context.Context, req models.RegReq) error {
 	if err != nil {
 		return utils.NewError(utils.ErrBadRequest, "user with this email already exists")
 	}
+
+	log.GetLogger(ctx).Debug("repo layer success ✔")
+
 	return nil
 }
 
@@ -33,6 +37,8 @@ func (p *Postgres) SignIn(ctx context.Context, email string) (db.LoginInfo, erro
 		return db.LoginInfo{}, utils.NewError(utils.ErrInternal, err.Error())
 	}
 
+	log.GetLogger(ctx).Debug("repo layer success ✔")
+
 	return info, nil
 }
 
@@ -43,5 +49,8 @@ func (p *Postgres) ResetPass(ctx context.Context, uuid string, password string) 
 	if err != nil {
 		return utils.NewError(utils.ErrInternal, err.Error())
 	}
+
+	log.GetLogger(ctx).Debug("repo layer success ✔")
+
 	return nil
 }

@@ -24,17 +24,10 @@ type server struct {
 	service service.Service
 }
 
-func RegisterGRPCServer(s *grpc.Server, service service.Service) {
-	gen.RegisterUserServer(s, newServer(service))
-}
-
-func newServer(s service.Service) gen.UserServer {
-	return &server{
-		converter: converter.NewConverter(),
-		validator: validator.NewValidator(),
-		log:       log.GetLogger(),
-		service:   s,
-	}
+func NewServer(l log.Logger, s service.Service) *grpc.Server {
+	serv := grpc.NewServer()
+	gen.RegisterUserServer(serv, &server{converter: converter.NewConverter(), validator: validator.NewValidator(), log: l, service: s})
+	return serv
 }
 
 func (s *server) Register(ctx context.Context, req *gen.RegisterReq) (*gen.RegisterRes, error) {
@@ -42,7 +35,9 @@ func (s *server) Register(ctx context.Context, req *gen.RegisterReq) (*gen.Regis
 		return nil, err
 	}
 
-	data, err := s.service.SignUp(ctx, s.converter.RegReqToService(req))
+	s.log.Debug("received register request ✔")
+
+	data, err := s.service.SignUp(log.WithLogger(ctx, s.log), s.converter.RegReqToService(req))
 	if err != nil {
 		return nil, utils.HandleError(err)
 	}
@@ -55,7 +50,9 @@ func (s *server) Login(ctx context.Context, req *gen.LoginReq) (*gen.LoginRes, e
 		return nil, err
 	}
 
-	token, err := s.service.SignIn(ctx, s.converter.LoginReqToService(req))
+	s.log.Debug("received login request ✔")
+
+	token, err := s.service.SignIn(log.WithLogger(ctx, s.log), s.converter.LoginReqToService(req))
 	if err != nil {
 		return nil, utils.HandleError(err)
 	}
@@ -67,7 +64,10 @@ func (s *server) Reset(ctx context.Context, req *gen.ResetReq) (*emptypb.Empty, 
 	if err := s.validator.ValidateResReq(req); err != nil {
 		return nil, err
 	}
-	if err := s.service.ResetPass(ctx, s.converter.ResetReqToService(req)); err != nil {
+
+	s.log.Debug("received reset request ✔")
+
+	if err := s.service.ResetPass(log.WithLogger(ctx, s.log), s.converter.ResetReqToService(req)); err != nil {
 		return nil, utils.HandleError(err)
 	}
 

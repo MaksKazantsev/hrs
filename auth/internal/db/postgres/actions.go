@@ -8,17 +8,17 @@ import (
 	"github.com/alserov/hrs/auth/internal/utils"
 )
 
-func (p *Postgres) GetUserInfo(ctx context.Context, uuid string) (models.User, error) {
-	var user models.User
+func (p *Postgres) GetUserInfo(ctx context.Context, uuid string) (models.UserInfo, error) {
+	var user models.UserInfo
 
-	q := `SELECT email, password, username FROM users WHERE uuid = $1`
+	q := `SELECT email, username FROM users WHERE uuid = $1`
 
 	err := p.QueryRowx(q, uuid).StructScan(&user)
 	if errors.Is(err, sql.ErrNoRows) {
-		return models.User{}, utils.NewError(utils.ErrNotFound, "user with this uuid not found")
+		return models.UserInfo{}, utils.NewError(utils.ErrNotFound, "user with this uuid not found")
 	}
 	if err != nil {
-		return models.User{}, utils.NewError(utils.ErrInternal, err.Error())
+		return models.UserInfo{}, utils.NewError(utils.ErrInternal, err.Error())
 	}
 
 	return user, nil

@@ -3,12 +3,16 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/alserov/hrs/auth/internal/log"
 	"github.com/alserov/hrs/auth/internal/models"
 	"github.com/alserov/hrs/auth/internal/utils"
 	"github.com/google/uuid"
 )
 
 func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes, error) {
+	// logging
+	log.GetLogger(ctx).Debug("usecase layer success ✔")
+
 	// generating uuid
 	req.UUID = uuid.New().String()
 
@@ -25,6 +29,7 @@ func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes,
 		return models.RegRes{}, fmt.Errorf("failed to generate token: %w", err)
 	}
 
+	// calling repo method
 	if err = s.repo.SignUp(ctx, req); err != nil {
 		return models.RegRes{}, fmt.Errorf("repo error: %w", err)
 	}
@@ -35,6 +40,10 @@ func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes,
 }
 
 func (s *service) SignIn(ctx context.Context, req models.LoginReq) (string, error) {
+	// logging
+	log.GetLogger(ctx).Debug("usecase layer success ✔")
+
+	// calling repo method
 	info, err := s.repo.SignIn(ctx, req.Email)
 	if err != nil {
 		return "", fmt.Errorf("repo error: %w", err)
@@ -54,6 +63,9 @@ func (s *service) SignIn(ctx context.Context, req models.LoginReq) (string, erro
 }
 
 func (s *service) ResetPass(ctx context.Context, req models.ResetReq) error {
+	// logging
+	log.GetLogger(ctx).Debug("usecase layer success ✔")
+
 	// Parse token
 	userID, err := utils.ParseToken(req.Token)
 	if err != nil {

@@ -2,15 +2,16 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"github.com/goccy/go-yaml"
 	"github.com/joho/godotenv"
 	"os"
 )
 
 type Config struct {
-	Port     int    `yaml:"port"`
-	Env      string `yaml:"env"`
-	Database Postgres
+	Port     int      `yaml:"port"`
+	Env      string   `yaml:"env"`
+	Database Postgres `yaml:"db"`
 }
 
 type Postgres struct {
@@ -41,7 +42,7 @@ func MustInit() *Config {
 }
 
 func (p *Postgres) GetDSN() string {
-	return "postgres://postgres:postgres@localhost:5000/auth?sslmode=disable"
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", p.User, p.Password, p.Host, p.Port, p.Name)
 }
 
 func fetchPath() string {

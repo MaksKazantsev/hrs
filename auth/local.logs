@@ -1,0 +1,3 @@
+time=2024-04-21T20:37:33.244+03:00 level=INFO msg="starting app" port=3003
+time=2024-04-21T20:37:33.297+03:00 level=INFO msg="app is running"
+time=2024-04-21T20:37:44.904+03:00 level=INFO msg="app was stopped"

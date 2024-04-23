@@ -17,7 +17,7 @@ type Auth interface {
 }
 
 type Actions interface {
-	GetUserInfo(ctx context.Context, uuid string) (models.User, error)
+	GetUserInfo(ctx context.Context, uuid string) (models.UserInfo, error)
 	GetUserPassword(ctx context.Context, uuid string) (string, error)
 }
 

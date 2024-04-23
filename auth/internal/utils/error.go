@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/alserov/hrs/auth/internal/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -32,7 +31,6 @@ func NewError(st int, message string) error {
 
 func HandleError(err error) error {
 	var e *Error
-	l := log.GetLogger()
 
 	if !errors.As(err, &e) {
 		return status.Error(codes.Internal, internalError)
@@ -40,10 +38,8 @@ func HandleError(err error) error {
 
 	switch e.Status {
 	case ErrInternal:
-		l.Error(e.Message)
 		return status.Error(codes.Internal, "internal error")
 	case ErrBadRequest:
-		l.Error(e.Message)
 		return status.Error(codes.InvalidArgument, e.Message)
 	case ErrNotFound:
 		return status.Error(codes.NotFound, e.Message)
