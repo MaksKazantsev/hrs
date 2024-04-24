@@ -7,6 +7,8 @@ import (
 	"github.com/alserov/hrs/auth/internal/models"
 	"github.com/alserov/hrs/auth/internal/utils"
 	"github.com/google/uuid"
+	"math/rand"
+	"strconv"
 )
 
 func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes, error) {
@@ -33,6 +35,22 @@ func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes,
 	if err = s.repo.SignUp(ctx, req); err != nil {
 		return models.RegRes{}, fmt.Errorf("repo error: %w", err)
 	}
+
+	// send verification code
+	code := strconv.Itoa(rand.Intn(8999) + 1000)
+	if err = s.sender.SendCode(code, req.Email); err != nil {
+		return models.RegRes{}, fmt.Errorf("failed to send code")
+	}
+	// calling repo method
+	info := models.VerInfo{
+		Email:      req.Email,
+		Code:       code,
+		IsVerified: false,
+	}
+	if err = s.repo.SaveVerif(ctx, info); err != nil {
+		return models.RegRes{}, fmt.Errorf("repo error: %w", err)
+	}
+
 	return models.RegRes{
 		UUID:  req.UUID,
 		Token: token,
@@ -94,5 +112,51 @@ func (s *service) ResetPass(ctx context.Context, req models.ResetReq) error {
 		return fmt.Errorf("repo error: %w", err)
 	}
 
+	return nil
+}
+
+func (s *service) RecoverPass(ctx context.Context, req models.RecoverReq) (string, error) {
+	// logging
+	log.GetLogger(ctx).Debug("usecase layer success ✔")
+
+	// hashing password
+	pass, err := utils.GenerateHash(req.NewPassword)
+	if err != nil {
+		return "", fmt.Errorf("failed to hash password: %w", err)
+	}
+	req.NewPassword = pass
+
+	// calling repo method
+	if err = s.repo.RecoverPass(ctx, req); err != nil {
+		return "", fmt.Errorf("repo error: %w", err)
+	}
+
+	// getting user ID
+	user, err := s.repo.GetUserInfoByEmail(ctx, req.Email)
+	if err != nil {
+		return "", fmt.Errorf("repo error: %w", err)
+	}
+
+	// generating token
+	token, err := utils.NewToken(user.UUID)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+	return token, nil
+}
+
+func (s *service) Verify(ctx context.Context, req models.VerifyReq) error {
+	info, err := s.repo.GetVerif(ctx, req.Email)
+	if err != nil {
+		return fmt.Errorf("repo error: %w", err)
+	}
+
+	if info.Code != req.Code {
+		return fmt.Errorf("wrong code provided")
+	}
+
+	if err = s.repo.Verificate(ctx, info.Code, req.Email); err != nil {
+		return fmt.Errorf("repo error: %v", err)
+	}
 	return nil
 }

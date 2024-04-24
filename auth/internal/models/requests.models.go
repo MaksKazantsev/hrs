@@ -17,3 +17,13 @@ type ResetReq struct {
 	NewPassword string `json:"new_password"`
 	Token       string `json:"token"`
 }
+
+type RecoverReq struct {
+	Email       string `json:"email"`
+	NewPassword string `yaml:"new_password"`
+}
+
+type VerifyReq struct {
+	Code  string `json:"code"`
+	Email string `json:"email"`
+}

@@ -73,3 +73,29 @@ func (s *server) Reset(ctx context.Context, req *gen.ResetReq) (*emptypb.Empty, 
 
 	return nil, nil
 }
+
+func (s *server) Recover(ctx context.Context, req *gen.RecoverReq) (*gen.RecoverRes, error) {
+	if err := s.validator.ValidateRecoverReq(req); err != nil {
+		return nil, err
+	}
+
+	s.log.Debug("received reset request ✔")
+
+	token, err := s.service.RecoverPass(log.WithLogger(ctx, s.log), s.converter.RecoverReqToService(req))
+	if err != nil {
+		return nil, utils.HandleError(err)
+	}
+
+	return s.converter.RecoverResToPb(token), nil
+}
+
+func (s *server) Verificate(ctx context.Context, req *gen.VerReq) (*emptypb.Empty, error) {
+	if err := s.validator.ValidateVerReq(req); err != nil {
+		return nil, err
+	}
+
+	if err := s.service.Verify(ctx, s.converter.VerifyReqToService(req)); err != nil {
+		return nil, utils.HandleError(err)
+	}
+	return nil, nil
+}

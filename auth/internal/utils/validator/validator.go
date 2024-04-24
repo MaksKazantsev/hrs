@@ -11,12 +11,15 @@ const (
 	ERR_INVALID_PASSWORD = "invalid password"
 	ERR_INVALID_USERNAME = "invalid username"
 	ERR_INVALID_EMAIL    = "invalid email"
+	ERR_INVALID_CODE     = "code must be 4 numbers in length"
 )
 
 type Validator interface {
 	ValidateRegReq(req *gen.RegisterReq) error
 	ValidateLoginReq(req *gen.LoginReq) error
 	ValidateResReq(req *gen.ResetReq) error
+	ValidateRecoverReq(req *gen.RecoverReq) error
+	ValidateVerReq(req *gen.VerReq) error
 }
 
 func NewValidator() Validator {
@@ -27,6 +30,26 @@ func NewValidator() Validator {
 
 type validator struct {
 	regExpEmail *regexp.Regexp
+}
+
+func (v validator) ValidateVerReq(req *gen.VerReq) error {
+	if ok := v.regExpEmail.MatchString(req.Email); !ok {
+		return status.Error(codes.InvalidArgument, ERR_INVALID_EMAIL)
+	}
+	if len(req.Code) != 4 {
+		return status.Error(codes.InvalidArgument, ERR_INVALID_PASSWORD)
+	}
+	return nil
+}
+
+func (v validator) ValidateRecoverReq(req *gen.RecoverReq) error {
+	if ok := v.regExpEmail.MatchString(req.Email); !ok {
+		return status.Error(codes.InvalidArgument, ERR_INVALID_EMAIL)
+	}
+	if err := ValidatePassword(req.NewPassword); err != nil {
+		return status.Error(codes.InvalidArgument, ERR_INVALID_PASSWORD)
+	}
+	return nil
 }
 
 func (v validator) ValidateLoginReq(req *gen.LoginReq) error {

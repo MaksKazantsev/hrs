@@ -8,6 +8,8 @@ service User {
   rpc Register(RegisterReq) returns(RegisterRes);
   rpc Login(LoginReq) returns(LoginRes);
   rpc Reset(ResetReq) returns(google.protobuf.Empty);
+  rpc Recover(RecoverReq) returns(RecoverRes);
+  rpc Verificate(VerReq) returns(google.protobuf.Empty);
 }
 
 message RegisterReq {
@@ -35,4 +37,19 @@ message ResetReq {
   string NewPassword =2;
   string Token = 3;
 }
+
+message RecoverReq {
+  string Email = 1;
+  string NewPassword = 2;
+}
+
+message RecoverRes {
+  string Token = 1;
+}
+
+message VerReq {
+  string Code = 1;
+  string Email = 2;
+}
+
 

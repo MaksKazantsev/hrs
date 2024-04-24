@@ -11,9 +11,9 @@ import (
 )
 
 func (p *Postgres) SignUp(ctx context.Context, req models.RegReq) error {
-	q := `INSERT INTO users (uuid,email,username,password) VALUES($1,$2,$3,$4)`
+	q := `INSERT INTO users (uuid,email,username,password,isverified) VALUES($1,$2,$3,$4,$5)`
 
-	_, err := p.Queryx(q, req.UUID, req.Email, req.UserName, req.Password)
+	_, err := p.Queryx(q, req.UUID, req.Email, req.UserName, req.Password, false)
 	if err != nil {
 		return utils.NewError(utils.ErrBadRequest, "user with this email already exists")
 	}
@@ -52,5 +52,35 @@ func (p *Postgres) ResetPass(ctx context.Context, uuid string, password string) 
 
 	log.GetLogger(ctx).Debug("repo layer success ✔")
 
+	return nil
+}
+
+func (p *Postgres) RecoverPass(ctx context.Context, req models.RecoverReq) error {
+	q := `UPDATE users SET password = $1 WHERE email = $2`
+
+	_, err := p.Queryx(q, req.NewPassword, req.Email)
+
+	if err != nil {
+		return utils.NewError(utils.ErrInternal, err.Error())
+	}
+
+	log.GetLogger(ctx).Debug("repo layer success ✔")
+
+	return nil
+}
+
+func (p *Postgres) Verificate(ctx context.Context, code, email string) error {
+	q1 := `DELETE FROM verif WHERE email = $1`
+
+	_, err := p.Queryx(q1, email)
+	if err != nil {
+		return utils.NewError(utils.ErrInternal, err.Error())
+	}
+
+	q2 := `UPDATE users SET isverified = $1 WHERE email = $2`
+	_, err = p.Queryx(q2, true, email)
+	if err != nil {
+		return utils.NewError(utils.ErrInternal, err.Error())
+	}
 	return nil
 }
