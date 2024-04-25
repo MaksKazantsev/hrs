@@ -50,6 +50,7 @@ message RecoverRes {
 message VerReq {
   string Code = 1;
   string Email = 2;
+  string Typo = 3;
 }
 
 

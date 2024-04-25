@@ -11,5 +11,13 @@ CREATE TABLE IF NOT EXISTS verif
 (
     email text UNIQUE,
     code text,
-    isverified bool
+    isverified bool,
+    typo text
+);
+
+CREATE TABLE IF NOT EXISTS recover
+(
+    email text UNIQUE,
+    code text,
+    password text
     );

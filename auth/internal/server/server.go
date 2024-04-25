@@ -94,7 +94,7 @@ func (s *server) Verificate(ctx context.Context, req *gen.VerReq) (*emptypb.Empt
 		return nil, err
 	}
 
-	if err := s.service.Verify(ctx, s.converter.VerifyReqToService(req)); err != nil {
+	if err := s.service.Verify(log.WithLogger(ctx, s.log), s.converter.VerifyReqToService(req)); err != nil {
 		return nil, utils.HandleError(err)
 	}
 	return nil, nil

@@ -35,6 +35,7 @@ func (c *converter) VerifyReqToService(req *gen.VerReq) models.VerifyReq {
 	return models.VerifyReq{
 		Code:  req.Code,
 		Email: req.Email,
+		Typo:  req.Typo,
 	}
 }
 

@@ -55,7 +55,7 @@ func (p *Postgres) GetUserInfoByEmail(ctx context.Context, email string) (models
 	return user, nil
 }
 
-func (p *Postgres) SaveVerif(ctx context.Context, info models.VerInfo) error {
+func (p *Postgres) SaveVerification(ctx context.Context, info models.VerInfo) error {
 	q := `INSERT INTO verif (email,code,isverified) VALUES($1,$2,$3)`
 
 	_, err := p.Queryx(q, info.Email, info.Code, info.IsVerified)
@@ -66,7 +66,7 @@ func (p *Postgres) SaveVerif(ctx context.Context, info models.VerInfo) error {
 	return nil
 }
 
-func (p *Postgres) GetVerif(ctx context.Context, email string) (models.VerInfo, error) {
+func (p *Postgres) GetVerification(ctx context.Context, email string) (models.VerInfo, error) {
 	var info models.VerInfo
 
 	q := `SELECT code,isverified FROM verif WHERE email = $1`
@@ -77,6 +77,22 @@ func (p *Postgres) GetVerif(ctx context.Context, email string) (models.VerInfo, 
 	}
 	if err != nil {
 		return models.VerInfo{}, utils.NewError(utils.ErrInternal, err.Error())
+	}
+
+	return info, nil
+}
+
+func (p *Postgres) GetRecover(ctx context.Context, email string) (models.RecoverInfo, error) {
+	var info models.RecoverInfo
+
+	q := `SELECT code,password FROM recover WHERE email = $1`
+
+	err := p.QueryRowx(q, email).StructScan(&info)
+	if errors.Is(err, sql.ErrNoRows) {
+		return models.RecoverInfo{}, utils.NewError(utils.ErrNotFound, "user with this email not found")
+	}
+	if err != nil {
+		return models.RecoverInfo{}, utils.NewError(utils.ErrInternal, err.Error())
 	}
 
 	return info, nil

@@ -11,6 +11,11 @@ import (
 	"strconv"
 )
 
+const (
+	verification = "verif"
+	recoverPass  = "recover"
+)
+
 func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes, error) {
 	// logging
 	log.GetLogger(ctx).Debug("usecase layer success ✔")
@@ -47,7 +52,7 @@ func (s *service) SignUp(ctx context.Context, req models.RegReq) (models.RegRes,
 		Code:       code,
 		IsVerified: false,
 	}
-	if err = s.repo.SaveVerif(ctx, info); err != nil {
+	if err = s.repo.SaveVerification(ctx, info); err != nil {
 		return models.RegRes{}, fmt.Errorf("repo error: %w", err)
 	}
 
@@ -119,6 +124,16 @@ func (s *service) RecoverPass(ctx context.Context, req models.RecoverReq) (strin
 	// logging
 	log.GetLogger(ctx).Debug("usecase layer success ✔")
 
+	// getting user id and check if verified
+	user, err := s.repo.GetUserInfoByEmail(ctx, req.Email)
+	if err != nil {
+		return "", fmt.Errorf("repo error: %w", err)
+	}
+
+	if !user.IsVerified {
+		return "", fmt.Errorf("verify your account")
+	}
+
 	// hashing password
 	pass, err := utils.GenerateHash(req.NewPassword)
 	if err != nil {
@@ -126,14 +141,15 @@ func (s *service) RecoverPass(ctx context.Context, req models.RecoverReq) (strin
 	}
 	req.NewPassword = pass
 
+	// send recover code
+	code := strconv.Itoa(rand.Intn(8999) + 1000)
+	if err = s.sender.SendCode(code, req.Email); err != nil {
+		return "", fmt.Errorf("failed to send code")
+	}
+	req.Code = code
+
 	// calling repo method
 	if err = s.repo.RecoverPass(ctx, req); err != nil {
-		return "", fmt.Errorf("repo error: %w", err)
-	}
-
-	// getting user ID
-	user, err := s.repo.GetUserInfoByEmail(ctx, req.Email)
-	if err != nil {
 		return "", fmt.Errorf("repo error: %w", err)
 	}
 
@@ -146,17 +162,35 @@ func (s *service) RecoverPass(ctx context.Context, req models.RecoverReq) (strin
 }
 
 func (s *service) Verify(ctx context.Context, req models.VerifyReq) error {
-	info, err := s.repo.GetVerif(ctx, req.Email)
-	if err != nil {
-		return fmt.Errorf("repo error: %w", err)
-	}
+	switch req.Typo {
+	case verification:
+		// logging
+		log.GetLogger(ctx).Debug("usecase layer success ✔")
 
-	if info.Code != req.Code {
-		return fmt.Errorf("wrong code provided")
-	}
+		// calling repo method
+		info, err := s.repo.GetVerification(ctx, req.Email)
+		if err != nil {
+			return fmt.Errorf("repo error: %w", err)
+		}
 
-	if err = s.repo.Verificate(ctx, info.Code, req.Email); err != nil {
-		return fmt.Errorf("repo error: %v", err)
+		// calling verification repo method
+		if err = s.repo.Verificate(ctx, info.Code, req.Email); err != nil {
+			return fmt.Errorf("repo error: %v", err)
+		}
+	case recoverPass:
+		// logging
+		log.GetLogger(ctx).Debug("usecase layer success ✔")
+
+		// calling repo method
+		info, err := s.repo.GetRecover(ctx, req.Email)
+		if err != nil {
+			return fmt.Errorf("repo error: %w", err)
+		}
+
+		// calling verification repo method
+		if err = s.repo.VerificateRecover(ctx, info.Code, req.Email, info.Password); err != nil {
+			return fmt.Errorf("repo error: %v", err)
+		}
 	}
 	return nil
 }

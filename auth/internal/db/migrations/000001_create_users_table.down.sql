@@ -1,2 +1,3 @@
 DROP TABLE users
 DROP TABLE verif
+DROP TABLE recover

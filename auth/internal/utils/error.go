@@ -11,7 +11,6 @@ const (
 	ErrNotFound
 	ErrBadRequest
 )
-const internalError = "unknown internal error"
 
 type Error struct {
 	Status  int
@@ -33,7 +32,7 @@ func HandleError(err error) error {
 	var e *Error
 
 	if !errors.As(err, &e) {
-		return status.Error(codes.Internal, internalError)
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	switch e.Status {
@@ -44,6 +43,6 @@ func HandleError(err error) error {
 	case ErrNotFound:
 		return status.Error(codes.NotFound, e.Message)
 	default:
-		return status.Error(codes.Internal, internalError)
+		return status.Error(codes.Internal, err.Error())
 	}
 }

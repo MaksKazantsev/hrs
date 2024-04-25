@@ -20,10 +20,12 @@ type ResetReq struct {
 
 type RecoverReq struct {
 	Email       string `json:"email"`
+	Code        string `json:"code"`
 	NewPassword string `yaml:"new_password"`
 }
 
 type VerifyReq struct {
 	Code  string `json:"code"`
 	Email string `json:"email"`
+	Typo  string `json:"typo"`
 }
